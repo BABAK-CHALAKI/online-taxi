@@ -1,53 +1,79 @@
-
-alert("به آسان سفر خوش آمدید")
-
 var map;
-var lat = 36.3212565;
-var lng = 59.5404382;
+var lat = 36.3141306;
+var lng = 59.549162;
+var flag = false;
 
+function calculate_distance(start, end)
+{
+    x1 = start.lat();
+    y1 = start.lng();
+    x2 = end.lat();
+    y2 = end.lng();
 
-
-
-function myMap() {
-  var mapProp = {
-    center: new google.maps.LatLng(lat, lng),
-    zoom: 7,
-  };
-   map = new google.maps.Map(document.getElementById("googleMap"), mapProp);
- 
+    var distance = Math.sqrt(Math.pow((x1 - x2), 2), Math.pow((y1 - y2), 2));
+    return distance;
 }
 
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(function (position) {
+function myMap() 
+{
+    var mapProp = {
+        center: new google.maps.LatLng(lat, lng),
+        zoom: 10,
+    };
+    map = new google.maps.Map(document.getElementById("googleMap"), mapProp);
+}
+
+if (navigator.geolocation) 
+{
+    navigator.geolocation.getCurrentPosition(function (position) {
+        lat = position.coords.latitude;
+        lng = position.coords.longitude;
+
+        var myCenter = new google.maps.LatLng(lat, lng)
+        map.setCenter(myCenter);
+
+        var marker_start = new google.maps.Marker({
+            position: myCenter,
+            draggable: true,
+            animation: google.maps.Animation.BOUNCE,
+        });
+        marker_start.setMap(map);
+
+        google.maps.event.addListener(marker_start, 'click', function () {
+         
+
+            var start_location = marker_start.getPosition();
+            
+
+            if (flag == false){
+                flag = true;
+                var message = document.getElementById("ُmessage");
+                message.innerHTML = "لطفا مقصد را انتخاب کنید";
+                
+                var marker_end = new google.maps.Marker({
+                    position: myCenter,
+                    draggable: true,
+                    animation: google.maps.Animation.BOUNCE,
+                });
+                marker_end.setMap(map);
     
-    lat = position.coords.latitude;
-    lng = position.coords.longitude;
-    var myCenter = new google.maps.LatLng(lat, lng);
-    map.setCenter(new google.maps.LatLng(lat, lng))
+                google.maps.event.addListener(marker_end, 'click', function () {
+                    
     
-  var marker = new google.maps.Marker({
-    position: myCenter, draggable: true,
-    animation: google.maps.Animation.BOUNCE,
-    // icon: 'https://cdn2.iconfinder.com/data/icons/avatar-profile/434/avatar_contact_starwars_user_default_yoda-64.png'
-  });
+                    var end_location = marker_end.getPosition();
+                    
 
-  marker.setMap(map);
-  google.maps.event.addlistener(marker, 'click', (function(marker , i){
-    return function(){
+                    var distance = calculate_distance(start_location, end_location);
+                    var price = Math.round(distance * 2000);
 
-    
-  var tag_p_lat = document.getElementById("lat")
-  var tag_p_lng = document.getElementById("lng")
-
-  var selected_location = marker.getPosition()
-
-  tag_p_lat.innerHTML = selected_location.lat()
-  tag_p_lng.innerHTML = selected_location.lng()
-    }
-})(marker));
-  });
+                    message.innerHTML = "درخواست سفر شا ثبت شد. هزینه سفر" + price + "تومان";
+                    message.classList.remove("alert-success");
+                    message.classList.add("alert-warning");
+                    show_notification();
+                });
+            }
+        });
+    });
 } else {
-  alert("Geolocation is not supported by this browser.");
+    allert("Geolocation is not supported by this browser.");
 }
-
-
